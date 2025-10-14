@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "878002236349",
+    "project_id": "wamdha-2cbfe",
+    "storage_bucket": "wamdha-2cbfe.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:878002236349:android:a71059a56f3cd130a680d4",
+        "android_client_info": {
+          "package_name": "com.example.wamdaa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5HHlR-w_22jOaFNnDzAXd3KD6I5jFyig"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
