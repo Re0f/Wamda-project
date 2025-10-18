@@ -4,7 +4,7 @@ import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/set_alert_screen.dart';
-import 'screens/view_alerts_screen.dart'; // <--- new import
+import 'screens/view_alerts_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();      // ✅ must come first

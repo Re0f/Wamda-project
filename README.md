@@ -4,13 +4,20 @@ A new Flutter project.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+App edits
+- create database (firebase)
+- auth email password
+- forget password screen with logic
+- sign up and create account screen and logic
+- settings (language - theme - logout)
+- get alerts from database
+- add new alert
+- add logo  ## done
+- instead of select device => device states , connect button
+- battery level in database
 
-A few resources to get you started if this is your first Flutter project:
+hardware edits
+- firebase database connection
+- read alerts
+- know the current time
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
