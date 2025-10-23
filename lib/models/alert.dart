@@ -1,17 +1,17 @@
 class Alert {
   final int? id;
   final String label;
-  final int hour;        // 0..23
-  final int minute;      // 0..59
-  final int daysMask;    // Sun..Sat = bitmask (0..127)
-  final bool enabled;
+  final int hour;
+  final int minute;
+  final Map daysMap;
+  bool enabled;
 
-  const Alert({
+  Alert({
     this.id,
     required this.label,
     required this.hour,
     required this.minute,
-    required this.daysMask,
+    required this.daysMap,
     this.enabled = true,
   });
 
@@ -20,7 +20,7 @@ class Alert {
     String? label,
     int? hour,
     int? minute,
-    int? daysMask,
+    Map? daysMap,
     bool? enabled,
   }) {
     return Alert(
@@ -28,7 +28,7 @@ class Alert {
       label: label ?? this.label,
       hour: hour ?? this.hour,
       minute: minute ?? this.minute,
-      daysMask: daysMask ?? this.daysMask,
+      daysMap: daysMap ?? this.daysMap,
       enabled: enabled ?? this.enabled,
     );
   }
@@ -38,7 +38,7 @@ class Alert {
     'label': label,
     'hour': hour,
     'minute': minute,
-    'days_mask': daysMask,
+    'daysMap': daysMap,
     'enabled': enabled ? 1 : 0,
   };
 
@@ -47,7 +47,7 @@ class Alert {
     label: m['label'] as String,
     hour: m['hour'] as int,
     minute: m['minute'] as int,
-    daysMask: m['days_mask'] as int,
+    daysMap: m['daysMap'] as Map,
     enabled: (m['enabled'] as int) == 1,
   );
 }

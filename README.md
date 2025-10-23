@@ -5,13 +5,13 @@ A new Flutter project.
 ## Getting Started
 
 App edits
-- create database (firebase)
-- auth email password
-- forget password screen with logic
-- sign up and create account screen and logic
-- settings (language - theme - logout)
-- get alerts from database
-- add new alert
+- create database (firebase) ## done
+- auth email password  ## done
+- forget password screen with logic. ## done
+- sign up and create account screen and logic. ## done
+- settings (language - theme - logout) ## done
+- get alerts from database ## done
+- add new alert ## done
 - add logo  ## done
 - instead of select device => device states , connect button
 - battery level in database

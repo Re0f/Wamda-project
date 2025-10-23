@@ -1,31 +1,50 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
-import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/settings_screen.dart';
-import 'screens/set_alert_screen.dart';
-import 'screens/view_alerts_screen.dart';
+import 'package:flutter/material.dart';
+import 'app/app.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'app/providers/all_app_provider.dart';
+import 'firebase_options.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();      // ✅ must come first
-  await Firebase.initializeApp();                 // ✅ initialize Firebase
-  runApp(const WamdaApp());                       // ✅ then run the app
-}
+void main() {
+  runZonedGuarded(
+        () async {
+      WidgetsFlutterBinding.ensureInitialized();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
 
-class WamdaApp extends StatelessWidget {
-  const WamdaApp({super.key});
+      await EasyLocalization.ensureInitialized();
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      routes: {
-        '/': (_) => const LoginScreen(),
-        '/home': (_) => const HomeScreen(),
-        '/settings': (_) => const SettingsScreen(), // add patterns
-        '/setalert': (_) => const SetAlertScreen(), //
-        '/alerts': (_) => const ViewAlertsScreen(), // <--- route added change view alarm to manage
-      },
-    );
-  }
+      FlutterError.onError = (FlutterErrorDetails details) {
+        FlutterError.dumpErrorToConsole(details);
+      };
+
+      ErrorWidget.builder = (FlutterErrorDetails details) {
+        return Center(
+          child: Text(
+            "Something went wrong 😢",
+            style: TextStyle(color: Colors.red, fontSize: 16),
+          ),
+        );
+      };
+
+      runApp(
+        EasyLocalization(
+          supportedLocales: const [Locale('en'), Locale('ar')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('en'),
+          child: UncontrolledProviderScope(
+            container: globalContainer,
+            child: App(),
+          ),
+        ),
+      );
+    },
+        (error, stack) {
+      print("Uncaught async error: $error");
+      print(stack);
+    },
+  );
 }
