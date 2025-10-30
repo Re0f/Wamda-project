@@ -2,37 +2,32 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wamdaa/app/const/colors.dart';
+import 'package:wamdaa/app/providers/all_app_provider.dart';
 import '../../app/theme/theme_provider.dart';
 import '../../services/auth_controller.dart';
+import '../../services/ble_service.dart';
+import '../ble_screen/providers/providers.dart';
 
 class SettingsPage extends ConsumerWidget {
   SettingsPage({super.key});
 
-  bool _isConnected = false;
   bool _dnd = false;
   int _battery = 80;
 
-  Future<void> _connect() async {
-    // if (_selectedDevice == null) return;
-    // setState(() => _isConnected = false);
-    // await Future.delayed(const Duration(milliseconds: 800));
-    // setState(() => _isConnected = true);
-  }
+  Future<void> _testVibration(BuildContext context) async {
+    final isConnected = globalContainer.read(bLEConnectedProvider);
+    final _bluetoothService = globalContainer.read(bluetoothServiceProvider);
 
-  Future<void> _reconnect() async {
-    await _connect();
-  }
-
-  Future<void> _testVibration() async {
-    if (!_isConnected) {
-      _snack('Connect a device first');
+    if (!isConnected) {
+      _snack('Connect a device first', context);
       return;
     }
-    _snack('Vibration test sent ✅');
+    _bluetoothService.testLED();
+    _snack('Vibration test sent ✅', context);
   }
 
-  void _snack(String msg) {
-    // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  void _snack(String msg, BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -40,6 +35,8 @@ class SettingsPage extends ConsumerWidget {
     final ThemeMode themeMode = ref.watch(themeModeProvider);
     final authController = ref.watch(authControllerProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isConnected = ref.watch(bLEConnectedProvider);
+    final voltage = ref.watch(voltageValueProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -103,7 +100,7 @@ class SettingsPage extends ConsumerWidget {
               ),
               SizedBox(height: 8),
               SegmentedButton<ThemeMode>(
-                segments:  <ButtonSegment<ThemeMode>>[
+                segments: <ButtonSegment<ThemeMode>>[
                   ButtonSegment<ThemeMode>(
                     value: ThemeMode.system,
                     label: Text('System'.tr()),
@@ -131,15 +128,27 @@ class SettingsPage extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                     Text(
-                      'DeviceStatus'.tr(),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'DeviceStatus'.tr(),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          isConnected ? "online".tr() : "disconnected".tr(),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
-                     Text(
+                    Text(
                       'Battery'.tr(),
                       style: TextStyle(
                         fontSize: 16,
@@ -152,23 +161,24 @@ class SettingsPage extends ConsumerWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: LinearProgressIndicator(
-                              value: _battery / 100,
+                              value: voltage,
                               minHeight: 12,
                               backgroundColor: Colors.grey.shade300,
                             ),
                           ),
                         ),
                         const SizedBox(width: 10),
-                        Text('$_battery%'),
+                        Text('${voltage.round()}%'),
                       ],
                     ),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text('Do Not Disturb'.tr()),
-                      value: _dnd,
-                      onChanged: (v) {},
-                      // onChanged: (v) => setState(() => _dnd = v),
-                    ),
+                    ElevatedButton(onPressed: (){}, child: Text('Connect'))
+                    // SwitchListTile(
+                    //   contentPadding: EdgeInsets.zero,
+                    //   title: Text('Do Not Disturb'.tr()),
+                    //   value: _dnd,
+                    //   onChanged: (v) {},
+                    //   // onChanged: (v) => setState(() => _dnd = v),
+                    // ),
                   ],
                 ),
               ),
@@ -178,7 +188,9 @@ class SettingsPage extends ConsumerWidget {
                     const SizedBox(height: 8),
                     _WideButton(
                       label: 'Test Vibration'.tr(),
-                      onPressed: _testVibration,
+                      onPressed: () {
+                        _testVibration(context);
+                      },
                     ),
                     const SizedBox(height: 8),
                     SizedBox(

@@ -60,4 +60,5 @@ class DefaultFirebaseOptions {
     databaseURL: 'https://wamda-46458-default-rtdb.firebaseio.com',
     storageBucket: 'wamda-46458.firebasestorage.app',
   );
+
 }

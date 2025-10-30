@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../screens/add_new_alert/set_alert_screen.dart';
+import '../../screens/ble_screen/ble_screen.dart';
 import '../../screens/home/home_screen.dart';
 import '../../screens/login/forget_password.dart';
 import '../../screens/login/loading_screen.dart';

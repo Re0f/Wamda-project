@@ -6,9 +6,11 @@ import 'package:wamdaa/app/const/colors.dart';
 import '../../app/providers/current_profile_provider.dart';
 import '../../models/alert.dart';
 import '../../services/firestore_services.dart';
+import '../ble_screen/providers/providers.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
+
   @override
   ConsumerState createState() => _HomeScreenState();
 }
@@ -19,6 +21,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final currentProfile = ref.watch(currentUserProfileProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final _alerts = currentProfile?.alerts ?? [];
+    final bleConnection = ref.watch(bLEConnectedProvider);
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
@@ -56,13 +59,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   title: Text(currentProfile?.name ?? ''),
                   subtitle: Row(
                     children: [
-                      Icon(Icons.circle, size: 10, color: Colors.green[600]),
+                      Icon(
+                        bleConnection ? Icons.circle : Icons.circle_outlined,
+                        size: 10,
+                        color: bleConnection ? Colors.green[600] : Colors.red,
+                      ),
                       const SizedBox(width: 10),
                       Text(
-                        "online".tr(),
+                        bleConnection ? "online".tr() : "disconnected".tr(),
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.green[600],
+                          color: bleConnection ?  Colors.green[600] : Colors.red,
                         ),
                       ),
                     ],
@@ -85,7 +92,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                 Text(
+                Text(
                   "Alerts".tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w300),
@@ -99,7 +106,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(24.0),
                       child: _alerts.isEmpty
-                          ?  Center(child: Text('No alerts yet'.tr()))
+                          ? Center(child: Text('No alerts yet'.tr()))
                           : ListView.separated(
                               shrinkWrap: true,
                               itemCount: _alerts.length,
@@ -220,6 +227,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar( SnackBar(content: Text('Alert deleted'.tr())));
+    ).showSnackBar(SnackBar(content: Text('Alert deleted'.tr())));
   }
 }

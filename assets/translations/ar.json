@@ -62,6 +62,7 @@
   "Alert deleted": "تم حذف التنبيه",
   "No alerts yet": "لا توجد تنبيهات بعد",
   "Confirm Password": "تأكيد كلمة المرور",
+  "disconnected": "غير متصل",
   "slogan": "استقلالك يبدأ بخطوات بسيطة مع ومضة",
   "auth.demo_credentials": "بيانات العرض التوضيحي:"
 }
