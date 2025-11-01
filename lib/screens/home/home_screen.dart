@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wamdaa/app/const/colors.dart';
+import '../../app/providers/all_app_provider.dart';
 import '../../app/providers/current_profile_provider.dart';
 import '../../models/alert.dart';
+import '../../services/ble_service.dart';
 import '../../services/firestore_services.dart';
 import '../ble_screen/providers/providers.dart';
 
@@ -16,6 +18,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  bool isSyncing = false;
+
   @override
   Widget build(BuildContext context) {
     final currentProfile = ref.watch(currentUserProfileProvider);
@@ -25,14 +29,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.push('/new-alert');
+        onPressed: () async {
+          setState(() {
+            isSyncing = true;
+          });
+          final currentProfile = globalContainer.read(
+            currentUserProfileProvider,
+          );
+          final ble = globalContainer.read(bluetoothServiceProvider);
+          await ble.syncAlerts(currentProfile?.alerts ?? []);
+          setState(() {
+            isSyncing = false;
+          });
         },
         backgroundColor: Colors.deepPurpleAccent,
         foregroundColor: Colors.white,
         elevation: 1,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-        child: const Icon(Icons.add_rounded, size: 35),
+        child: const Icon(Icons.sync, size: 35),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -69,7 +83,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         bleConnection ? "online".tr() : "disconnected".tr(),
                         style: TextStyle(
                           fontSize: 12,
-                          color: bleConnection ?  Colors.green[600] : Colors.red,
+                          color: bleConnection ? Colors.green[600] : Colors.red,
                         ),
                       ),
                     ],
@@ -92,93 +106,140 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text(
-                  "Alerts".tr(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w300),
-                ),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.6),
-                      borderRadius: BorderRadius.circular(20),
+                Row(
+                  children: [
+                    Text(
+                      "Alerts".tr(),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w300,
+                      ),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: _alerts.isEmpty
-                          ? Center(child: Text('No alerts yet'.tr()))
-                          : ListView.separated(
-                              shrinkWrap: true,
-                              itemCount: _alerts.length,
-                              separatorBuilder: (_, __) =>
-                                  const SizedBox(height: 8),
-                              itemBuilder: (context, i) {
-                                final a = _alerts[i];
-                                final time = _fmtTime(
-                                  TimeOfDay(hour: a.hour, minute: a.minute),
-                                );
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    color: isDark
-                                        ? Color(0xFF1E1E1E)
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      ListTile(
-                                        title: Text(a.label),
-                                        subtitle: Text(time),
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Switch(
-                                              value: a.enabled,
-                                              focusColor: Colors.red,
-                                              // activeColor: Colors.green,
-                                              activeTrackColor: Colors.green,
-                                              onChanged: (v) => _toggle(a, v),
+                    IconButton(
+                      onPressed: () {
+                        context.push('/new-alert');
+                      },
+                      icon: const Icon(Icons.add_rounded, size: 35),
+                    ),
+                  ],
+                ),
+                Builder(
+                  builder: (ctx) {
+                    return isSyncing
+                        ? Expanded(
+                            child:  Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('Syncing...'.tr(), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w300),),
+                                  SizedBox(height: 10),
+                                  CircularProgressIndicator(),
+                                ],
+                              ),
+                            ),
+                          )
+                        : Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(24.0),
+                                child: _alerts.isEmpty
+                                    ? Center(child: Text('No alerts yet'.tr()))
+                                    : ListView.separated(
+                                        shrinkWrap: true,
+                                        itemCount: _alerts.length,
+                                        separatorBuilder: (_, __) =>
+                                            const SizedBox(height: 8),
+                                        itemBuilder: (context, i) {
+                                          final a = _alerts[i];
+                                          final time = _fmtTime(
+                                            TimeOfDay(
+                                              hour: a.hour,
+                                              minute: a.minute,
                                             ),
-                                            IconButton(
-                                              icon: const Icon(
-                                                Icons.delete_outline,
-                                              ),
-                                              onPressed: () => _delete(a),
+                                          );
+                                          return Container(
+                                            decoration: BoxDecoration(
+                                              color: isDark
+                                                  ? Color(0xFF1E1E1E)
+                                                  : Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
-                                          ],
-                                        ),
-                                      ),
-                                      Wrap(
-                                        children: _alerts[i].daysMap.entries
-                                            .map((e) {
-                                              return Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 4,
-                                                    ),
-                                                child: Text(
-                                                  e.key.toString(),
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: e.value
-                                                        ? Colors.pink
-                                                        : isDark
-                                                        ? Colors.white
-                                                        : Colors.black,
+                                            child: Column(
+                                              children: [
+                                                ListTile(
+                                                  onTap: () {
+                                                    context.push('/edit-alert', extra: {
+                                                      'alert': a,
+                                                      'alertIndex': i,
+                                                    });
+                                                  },
+                                                  title: Text(a.label),
+                                                  subtitle: Text(time),
+                                                  trailing: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Switch(
+                                                        value: a.enabled,
+                                                        focusColor: Colors.red,
+                                                        // activeColor: Colors.green,
+                                                        activeTrackColor:
+                                                            Colors.green,
+                                                        onChanged: (v) =>
+                                                            _toggle(a, v),
+                                                      ),
+                                                      IconButton(
+                                                        icon: const Icon(
+                                                          Icons.delete_outline,
+                                                        ),
+                                                        onPressed: () =>
+                                                            _delete(a),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
-                                              );
-                                            })
-                                            .toList(),
+                                                Wrap(
+                                                  children: _alerts[i]
+                                                      .daysMap
+                                                      .entries
+                                                      .map((e) {
+                                                        return Padding(
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                horizontal: 4,
+                                                              ),
+                                                          child: Text(
+                                                            getDayNameLocal(e.key.toString()),
+                                                            style: TextStyle(
+                                                              fontSize: 12,
+                                                              color: e.value
+                                                                  ? Colors.pink
+                                                                  : isDark
+                                                                  ? Colors.white
+                                                                  : Colors
+                                                                        .black,
+                                                            ),
+                                                          ),
+                                                        );
+                                                      })
+                                                      .toList(),
+                                                ),
+                                                SizedBox(height: 10),
+                                              ],
+                                            ),
+                                          );
+                                        },
                                       ),
-                                      SizedBox(height: 10),
-                                    ],
-                                  ),
-                                );
-                              },
+                              ),
                             ),
-                    ),
-                  ),
+                          );
+                  },
                 ),
               ],
             ),
@@ -228,5 +289,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text('Alert deleted'.tr())));
+  }
+
+  String getDayNameLocal(String string) {
+    final locale = Localizations.localeOf(context).languageCode;
+    if (locale == 'ar') {
+      return string.tr();
+    }
+    return string;
   }
 }

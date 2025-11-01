@@ -11,9 +11,6 @@ import '../ble_screen/providers/providers.dart';
 class SettingsPage extends ConsumerWidget {
   SettingsPage({super.key});
 
-  bool _dnd = false;
-  int _battery = 80;
-
   Future<void> _testVibration(BuildContext context) async {
     final isConnected = globalContainer.read(bLEConnectedProvider);
     final _bluetoothService = globalContainer.read(bluetoothServiceProvider);
@@ -171,7 +168,7 @@ class SettingsPage extends ConsumerWidget {
                         Text('${voltage.round()}%'),
                       ],
                     ),
-                    ElevatedButton(onPressed: (){}, child: Text('Connect'))
+                    // ElevatedButton(onPressed: (){}, child: Text('Connect'))
                     // SwitchListTile(
                     //   contentPadding: EdgeInsets.zero,
                     //   title: Text('Do Not Disturb'.tr()),

@@ -3,10 +3,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:wamdaa/app/providers/all_app_provider.dart';
-import '../app/providers/current_profile_provider.dart';
 import '../models/alert.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../screens/ble_screen/providers/providers.dart';
 
 final bluetoothServiceProvider = Provider<ESP32BluetoothService>((ref) {
@@ -57,7 +55,7 @@ class ESP32BluetoothService {
     // Listen to scan results
     var subscription = FlutterBluePlus.scanResults.listen((results) {
       for (ScanResult r in results) {
-        if (r.device.platformName.contains("ESP32_Alert") ||
+        if (r.device.platformName.contains("ESP32_Alert_System") ||
             r.advertisementData.serviceUuids.contains(SERVICE_UUID)) {
           if (!devices.contains(r.device)) {
             devices.add(r.device);
@@ -88,54 +86,58 @@ class ESP32BluetoothService {
           .where((state) => state == BluetoothConnectionState.connected)
           .first;
 
-      // Discover services
-      List<BluetoothService> services = await device.discoverServices();
-
-      for (BluetoothService service in services) {
-        print(service.uuid.toString());
-        if (service.uuid.toString().toLowerCase() ==
-            SERVICE_UUID.toLowerCase()) {
-          for (BluetoothCharacteristic characteristic
-              in service.characteristics) {
-            String charUuid = characteristic.uuid.toString().toLowerCase();
-
-            if (charUuid == ALERT_CHAR_UUID.toLowerCase()) {
-              _alertCharacteristic = characteristic;
-            } else if (charUuid == VOLTAGE_CHAR_UUID.toLowerCase()) {
-              _voltageCharacteristic = characteristic;
-              // Subscribe to voltage updates
-              await characteristic.setNotifyValue(true);
-              characteristic.value.listen((value) {
-                if (value.isNotEmpty) {
-                  double voltage = _parseVoltage(value);
-                  _voltageController.add(voltage);
-                  globalContainer.read(voltageValueProvider.notifier).state =
-                      voltage;
-                }
-              });
-            } else if (charUuid == LED_TEST_CHAR_UUID.toLowerCase()) {
-              _ledTestCharacteristic = characteristic;
-            } else if (charUuid == STATUS_CHAR_UUID.toLowerCase()) {
-              _statusCharacteristic = characteristic;
-            }
-          }
-        }
-      }
-
-      _connectionStateController.add(true);
-
-      // Listen for disconnection
-      device.connectionState.listen((state) {
-        if (state == BluetoothConnectionState.disconnected) {
-          _handleDisconnection();
-        }
-      });
+      discoverServices(device);
 
       return true;
     } catch (e) {
       print('Error connecting to device: $e');
       return false;
     }
+  }
+
+  discoverServices(device) async {
+    // Discover services
+    List<BluetoothService> services = await device.discoverServices();
+
+    for (BluetoothService service in services) {
+      print(service.uuid.toString());
+      if (service.uuid.toString().toLowerCase() ==
+          SERVICE_UUID.toLowerCase()) {
+        for (BluetoothCharacteristic characteristic
+        in service.characteristics) {
+          String charUuid = characteristic.uuid.toString().toLowerCase();
+
+          if (charUuid == ALERT_CHAR_UUID.toLowerCase()) {
+            _alertCharacteristic = characteristic;
+          } else if (charUuid == VOLTAGE_CHAR_UUID.toLowerCase()) {
+            _voltageCharacteristic = characteristic;
+            // Subscribe to voltage updates
+            await characteristic.setNotifyValue(true);
+            characteristic.value.listen((value) {
+              if (value.isNotEmpty) {
+                double voltage = _parseVoltage(value);
+                _voltageController.add(voltage);
+                globalContainer.read(voltageValueProvider.notifier).state =
+                    voltage;
+              }
+            });
+          } else if (charUuid == LED_TEST_CHAR_UUID.toLowerCase()) {
+            _ledTestCharacteristic = characteristic;
+          } else if (charUuid == STATUS_CHAR_UUID.toLowerCase()) {
+            _statusCharacteristic = characteristic;
+          }
+        }
+      }
+    }
+
+    _connectionStateController.add(true);
+
+    // Listen for disconnection
+    device.connectionState.listen((state) {
+      if (state == BluetoothConnectionState.disconnected) {
+        _handleDisconnection();
+      }
+    });
   }
 
   // Disconnect from ESP32
@@ -207,8 +209,6 @@ class ESP32BluetoothService {
 
     try {
       await _ledTestCharacteristic!.write([0x01], withoutResponse: false);
-      final currentProfile = globalContainer.read(currentUserProfileProvider);
-      syncAlerts(currentProfile?.alerts ?? []);
       return true;
     } catch (e) {
       print('Error testing LED: $e');
@@ -244,13 +244,13 @@ class ESP32BluetoothService {
   // Convert daysMap to integer bitmask
   int _daysMapToInt(Map daysMap) {
     int days = 0;
-    if (daysMap['monday'] == true) days |= (1 << 0);
-    if (daysMap['tuesday'] == true) days |= (1 << 1);
-    if (daysMap['wednesday'] == true) days |= (1 << 2);
-    if (daysMap['thursday'] == true) days |= (1 << 3);
-    if (daysMap['friday'] == true) days |= (1 << 4);
-    if (daysMap['saturday'] == true) days |= (1 << 5);
-    if (daysMap['sunday'] == true) days |= (1 << 6);
+    if (daysMap['Mon'] == true) days |= (1 << 0);
+    if (daysMap['Tue'] == true) days |= (1 << 1);
+    if (daysMap['Wed'] == true) days |= (1 << 2);
+    if (daysMap['Thu'] == true) days |= (1 << 3);
+    if (daysMap['Fri'] == true) days |= (1 << 4);
+    if (daysMap['Sat'] == true) days |= (1 << 5);
+    if (daysMap['Sun'] == true) days |= (1 << 6);
     return days;
   }
 

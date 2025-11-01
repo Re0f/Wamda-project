@@ -1,8 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../models/alert.dart';
+import '../../screens/add_new_alert/edit_alert.dart';
 import '../../screens/add_new_alert/set_alert_screen.dart';
-import '../../screens/ble_screen/ble_screen.dart';
 import '../../screens/home/home_screen.dart';
 import '../../screens/login/forget_password.dart';
 import '../../screens/login/loading_screen.dart';
@@ -58,6 +59,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/loading',
             builder: (context, state) =>  LoadingScreen(),
+          ),
+          GoRoute(
+            path: '/edit-alert',
+            builder: (context, state) {
+              final extras = state.extra as Map<String, dynamic>;
+              final alert = extras['alert'] as Alert;
+              final alertIndex = extras['alertIndex'] as int;
+
+              return EditAlertScreen(alert: alert, alertIndex: alertIndex);
+            },
           ),
         ],
       ),

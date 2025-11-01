@@ -17,7 +17,7 @@ class _SetAlertScreenState extends ConsumerState<SetAlertScreen> {
   TimeOfDay? _time;
   final List<bool> _days = List.filled(7, false);
   final _dayNames = const ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
+  final _arabicDayNames = const ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
 
   @override
   void dispose() {
@@ -85,6 +85,7 @@ class _SetAlertScreenState extends ConsumerState<SetAlertScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final locale = Localizations.localeOf(context).languageCode;
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -146,7 +147,7 @@ class _SetAlertScreenState extends ConsumerState<SetAlertScreen> {
                         runSpacing: 8,
                         children: List.generate(7, (i) {
                           return FilterChip(
-                            label: Text(_dayNames[i]),
+                            label: Text(locale == 'ar' ? _arabicDayNames[i] : _dayNames[i]),
                             selected: _days[i],
                             onSelected: (v) => setState(() => _days[i] = v),
                           );

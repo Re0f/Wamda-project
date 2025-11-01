@@ -11,9 +11,7 @@ import '../providers/all_app_provider.dart';
 
 class AuthenticatedWrapper extends ConsumerStatefulWidget {
   final Widget child;
-
   const AuthenticatedWrapper({super.key, required this.child});
-
   @override
   ConsumerState<AuthenticatedWrapper> createState() =>
       _AuthenticatedWrapperState();
@@ -29,9 +27,18 @@ class _AuthenticatedWrapperState extends ConsumerState<AuthenticatedWrapper> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _requestPermissions();
-      FlutterBluePlus.events.onConnectionStateChanged.listen((event) {
+      FlutterBluePlus.events.onConnectionStateChanged.listen((event) async{
         globalContainer.read(bLEConnectedProvider.notifier).state =
             event.connectionState == BluetoothConnectionState.connected;
+
+        await event.device.connectionState
+            .where((state) => state == BluetoothConnectionState.connected)
+            .first;
+
+        if(event.connectionState == BluetoothConnectionState.connected) {
+          print('################## Connected to device');
+          globalContainer.read(bluetoothServiceProvider).discoverServices(event.device);
+        }
       });
 
       findDevice();
@@ -60,13 +67,6 @@ class _AuthenticatedWrapperState extends ConsumerState<AuthenticatedWrapper> {
     final _bluetoothService = ref.read(bluetoothServiceProvider);
     _bluetoothService.dispose();
     super.dispose();
-  }
-
-  void _listenToVoltage() {
-    final _bluetoothService = ref.read(bluetoothServiceProvider);
-    _bluetoothService.voltageStream.listen((voltage) {
-      ref.read(voltageValueProvider.notifier).state = voltage;
-    });
   }
 
   Future<void> _requestPermissions() async {
