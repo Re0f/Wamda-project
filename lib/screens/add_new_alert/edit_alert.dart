@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wamdaa/screens/add_new_alert/selector.dart';
 import '../../app/const/colors.dart';
 import '../../app/providers/current_profile_provider.dart';
 import '../../models/alert.dart';
@@ -25,8 +26,17 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
   late TimeOfDay _time;
   late List<bool> _days;
   final _dayNames = const ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  final _arabicDayNames = const ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+  final _arabicDayNames = const [
+    'أحد',
+    'إثنين',
+    'ثلاثاء',
+    'أربعاء',
+    'خميس',
+    'جمعة',
+    'سبت',
+  ];
   bool _hasChanges = false;
+  LineType _type = LineType.continuous;
 
   @override
   void initState() {
@@ -34,6 +44,7 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
     // Initialize with existing alert data
     _labelCtrl = TextEditingController(text: widget.alert.label);
     _time = TimeOfDay(hour: widget.alert.hour, minute: widget.alert.minute);
+    _type = LineType.values[widget.alert.type ?? 0];
 
     // Initialize days from the alert's daysMap
     _days = List.generate(7, (index) {
@@ -64,10 +75,7 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
   }
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: _time,
-    );
+    final picked = await showTimePicker(context: context, initialTime: _time);
     if (picked != null) {
       setState(() {
         _time = picked;
@@ -93,22 +101,33 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
 
     // Update the alert object
     final updatedAlert = Alert(
-      id: widget.alert.id, // Keep the same ID
-      label: _labelCtrl.text.trim().isEmpty ? 'Alert'.tr() : _labelCtrl.text.trim(),
+      id: widget.alert.id,
+      // Keep the same ID
+      label: _labelCtrl.text
+          .trim()
+          .isEmpty
+          ? 'Alert'.tr()
+          : _labelCtrl.text.trim(),
       hour: _time.hour,
       minute: _time.minute,
       daysMap: daysMap,
+      type: _type.index,
       enabled: widget.alert.enabled, // Preserve enabled status
     );
 
     // Update in the profile
     final currentProfile = ref.read(currentUserProfileProvider);
-    if (currentProfile != null && widget.alertIndex < currentProfile.alerts.length) {
+    if (currentProfile != null &&
+        widget.alertIndex < currentProfile.alerts.length) {
       currentProfile.alerts[widget.alertIndex] = updatedAlert;
 
       // Update local state
-      ref.read(currentUserProfileProvider.notifier).state = null;
-      ref.read(currentUserProfileProvider.notifier).state = currentProfile;
+      ref
+          .read(currentUserProfileProvider.notifier)
+          .state = null;
+      ref
+          .read(currentUserProfileProvider.notifier)
+          .state = currentProfile;
 
       // Update in Firestore
       final firestoreService = ref.read(firestoreServiceProvider);
@@ -138,7 +157,9 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final isDark = Theme
+            .of(context)
+            .brightness == Brightness.dark;
 
         return AlertDialog(
           title: Text('Delete Alert'.tr()),
@@ -168,12 +189,17 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
     if (confirmed == true) {
       // Remove from profile
       final currentProfile = ref.read(currentUserProfileProvider);
-      if (currentProfile != null && widget.alertIndex < currentProfile.alerts.length) {
+      if (currentProfile != null &&
+          widget.alertIndex < currentProfile.alerts.length) {
         currentProfile.alerts.removeAt(widget.alertIndex);
 
         // Update local state
-        ref.read(currentUserProfileProvider.notifier).state = null;
-        ref.read(currentUserProfileProvider.notifier).state = currentProfile;
+        ref
+            .read(currentUserProfileProvider.notifier)
+            .state = null;
+        ref
+            .read(currentUserProfileProvider.notifier)
+            .state = currentProfile;
 
         // Update in Firestore
         final firestoreService = ref.read(firestoreServiceProvider);
@@ -205,11 +231,15 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
     final shouldLeave = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final isDark = Theme
+            .of(context)
+            .brightness == Brightness.dark;
 
         return AlertDialog(
           title: Text('Unsaved Changes'.tr()),
-          content: Text('You have unsaved changes. Do you want to discard them?'.tr()),
+          content: Text(
+            'You have unsaved changes. Do you want to discard them?'.tr(),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -237,8 +267,12 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final locale = Localizations.localeOf(context).languageCode;
+    final isDark = Theme
+        .of(context)
+        .brightness == Brightness.dark;
+    final locale = Localizations
+        .localeOf(context)
+        .languageCode;
 
     return WillPopScope(
       onWillPop: _onWillPop,
@@ -247,7 +281,9 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: isDark ? AppColors.backgroundGradDark : AppColors.backgroundGrad,
+              colors: isDark
+                  ? AppColors.backgroundGradDark
+                  : AppColors.backgroundGrad,
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -273,7 +309,10 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
                                 Navigator.pop(context);
                               }
                             },
-                            icon: const Icon(Icons.arrow_back_ios_new, size: 24),
+                            icon: const Icon(
+                              Icons.arrow_back_ios_new,
+                              size: 24,
+                            ),
                           ),
                           Expanded(
                             child: Text(
@@ -305,7 +344,9 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
                           decoration: InputDecoration(
                             labelText: 'Time'.tr(),
                             border: const OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(12)),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(12),
+                              ),
                             ),
                             suffixIcon: const Icon(Icons.access_time),
                           ),
@@ -328,7 +369,9 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
-                                color: isDark ? Colors.grey[300] : Colors.grey[700],
+                                color: isDark
+                                    ? Colors.grey[300]
+                                    : Colors.grey[700],
                               ),
                             ),
                           ),
@@ -339,7 +382,11 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
                               runSpacing: 8,
                               children: List.generate(7, (i) {
                                 return FilterChip(
-                                  label: Text(locale == 'ar' ? _arabicDayNames[i] : _dayNames[i]),
+                                  label: Text(
+                                    locale == 'ar'
+                                        ? _arabicDayNames[i]
+                                        : _dayNames[i],
+                                  ),
                                   selected: _days[i],
                                   onSelected: (v) {
                                     setState(() {
@@ -350,7 +397,9 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
                                   selectedColor: isDark
                                       ? Colors.blue.withOpacity(0.3)
                                       : Colors.blue.withOpacity(0.2),
-                                  checkmarkColor: isDark ? Colors.white : Colors.black,
+                                  checkmarkColor: isDark
+                                      ? Colors.white
+                                      : Colors.black,
                                 );
                               }),
                             ),
@@ -373,6 +422,18 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
                       ),
                       const SizedBox(height: 24),
 
+                      SizedBox(
+                        height: 200,
+                        child: LineSelector(
+                          onChange: (type) =>
+                              setState(() {
+                                _onDataChanged();
+                                _type = type;
+                              }),
+                          initialValue: _type,
+                        ),
+                      ),
+
                       // Action Buttons
                       Row(
                         children: [
@@ -389,25 +450,34 @@ class _EditAlertScreenState extends ConsumerState<EditAlertScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 side: BorderSide(
-                                  color: isDark ? Colors.grey[600]! : Colors.grey[400]!,
+                                  color: isDark
+                                      ? Colors.grey[600]!
+                                      : Colors.grey[400]!,
                                 ),
                               ),
                               child: Text(
                                 "Cancel".tr(),
                                 style: TextStyle(
-                                  color: isDark ? Colors.grey[300] : Colors.grey[700],
+                                  color: isDark
+                                      ? Colors.grey[300]
+                                      : Colors.grey[700],
                                 ),
                               ),
                             ),
                           ),
+
                           const SizedBox(width: 12),
                           Expanded(
                             flex: 2,
                             child: ElevatedButton(
                               onPressed: _hasChanges ? _save : null,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: isDark ? Colors.white : Colors.black,
-                                foregroundColor: isDark ? Colors.black : Colors.white,
+                                backgroundColor: isDark
+                                    ? Colors.white
+                                    : Colors.black,
+                                foregroundColor: isDark
+                                    ? Colors.black
+                                    : Colors.white,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),

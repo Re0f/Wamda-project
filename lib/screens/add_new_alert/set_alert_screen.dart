@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wamdaa/screens/add_new_alert/selector.dart';
 import '../../app/const/colors.dart';
 import '../../app/providers/current_profile_provider.dart';
 import '../../models/alert.dart';
@@ -18,6 +19,7 @@ class _SetAlertScreenState extends ConsumerState<SetAlertScreen> {
   final List<bool> _days = List.filled(7, false);
   final _dayNames = const ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   final _arabicDayNames = const ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+  LineType _type = LineType.continuous;
 
   @override
   void dispose() {
@@ -54,6 +56,7 @@ class _SetAlertScreenState extends ConsumerState<SetAlertScreen> {
       hour: _time!.hour,
       minute: _time!.minute,
       daysMap: daysMap,
+      type: _type.index,
       enabled: true,
     );
 
@@ -164,6 +167,11 @@ class _SetAlertScreenState extends ConsumerState<SetAlertScreen> {
                         ),
                       ),
                     ),
+                    SizedBox(
+                        height: 200,
+                        child: LineSelector(
+                          onChange: (type) => setState(() => _type = type),
+                        )),
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,

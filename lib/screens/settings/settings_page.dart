@@ -98,10 +98,10 @@ class SettingsPage extends ConsumerWidget {
               SizedBox(height: 8),
               SegmentedButton<ThemeMode>(
                 segments: <ButtonSegment<ThemeMode>>[
-                  ButtonSegment<ThemeMode>(
-                    value: ThemeMode.system,
-                    label: Text('System'.tr()),
-                  ),
+                  // ButtonSegment<ThemeMode>(
+                  //   value: ThemeMode.system,
+                  //   label: Text('System'.tr()),
+                  // ),
                   ButtonSegment<ThemeMode>(
                     value: ThemeMode.light,
                     label: Text('Light'.tr()),

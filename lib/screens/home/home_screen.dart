@@ -70,7 +70,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     backgroundColor: isDark ? Colors.white : null,
                     backgroundImage: AssetImage("assets/images/logo.png"),
                   ),
-                  title: Text(currentProfile?.name ?? ''),
+                  title: Text(currentProfile?.name ?? '', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w300),),
                   subtitle: Row(
                     children: [
                       Icon(
@@ -100,12 +100,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   "slogan".tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 24,
                     fontWeight: FontWeight.w300,
                     color: isDark ? Colors.white : Colors.teal,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     Text(

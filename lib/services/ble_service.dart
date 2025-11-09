@@ -171,6 +171,7 @@ class ESP32BluetoothService {
           'minute': alert.minute,
           'days': _daysMapToInt(alert.daysMap),
           'enabled': alert.enabled ? 1 : 0,
+          'type': alert.type,
         };
       }).toList();
 

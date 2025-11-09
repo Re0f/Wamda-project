@@ -84,6 +84,12 @@
   "Thu": "Thu",
   "Fri": "Fri",
   "Sat": "Sat",
+
+  "Type": "Type",
+  "Continuous": "Continuous",
+  "High Freq": "High Freq",
+  "Low Freq": "Low Freq",
+
   "Are you sure you want to delete this alert?": "Are you sure you want to delete this alert?",
   "slogan": "Your independence starts with simple steps with Wamda",
   "auth.demo_credentials": "Demo Credentials:"

@@ -8,8 +8,8 @@ class AppColors{
   ];
 
   static const backgroundGradDark = [
-    Color(0xFF260055),
-    Color(0xFF8C27FF),
+    Color(0xFF001E8E),
+    Color(0xFF00AFBC),
   ];
 
 
